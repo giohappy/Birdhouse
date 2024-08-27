@@ -49,7 +49,7 @@ public:
 
     // OSC
     void tryConnect (auto port);
-    auto& getChannel (std::size_t index) const { return mOscBridgeChannels.at (index); }
+    auto& getChannel () const { return mOscBridgeChannel; }
 
     inline auto isConnected()
     {
@@ -65,13 +65,14 @@ public:
     void updateValuesFromNonAudioParams (auto state);
 
     // Parameters
-    juce::AudioProcessorValueTreeState parameters { *this, nullptr, "Parameters", birdhouse::BirdHouseParams<numBridgeChans>::createParameterLayout() };
+    juce::AudioProcessorValueTreeState parameters { *this, nullptr, "Parameters", birdhouse::BirdHouseParams::createParameterLayout() };
     std::atomic<bool> mParametersNeedUpdating = true;
     void parameterChanged (const juce::String& parameterID, float newValue) override;
 
 private:
     std::atomic<bool> mConnected = false;
     std::vector<std::shared_ptr<birdhouse::OSCBridgeChannel>> mOscBridgeChannels;
+    std::shared_ptr<birdhouse::OSCBridgeChannel> mOscBridgeChannel;
     std::shared_ptr<birdhouse::OSCBridgeManager> mOscBridgeManager;
 
     std::shared_ptr<LambdaStateListener> mGlobalStateListener;

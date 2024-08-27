@@ -40,40 +40,36 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     // titleLabel.setVisible (true);
     // addAndMakeVisible (titleLabel);
 
-    // Set up each channel
-    for (auto chanNum = 1u; chanNum <= numBridgeChans; chanNum++)
-    {
-        oscBridgeChannelEditors.push_back (std::make_unique<OSCBridgeChannelEditor> (chanNum, processorRef.parameters));
+    oscBridgeChannelEditor = std::make_unique<OSCBridgeChannelEditor> (processorRef.parameters);
 
-        // Set default values for the editors
-        oscBridgeChannelEditors.back()->setFont (juce::Font (defaultFontSize, juce::Font::plain));
-        oscBridgeChannelEditors.back()->setTitle (juce::String (chanNum));
+    // Set default values for the editors
+    oscBridgeChannelEditor->setFont (juce::Font (defaultFontSize, juce::Font::plain));
+    oscBridgeChannelEditor->setTitle (juce::String (1));
 
-        // Get defaults from the non-audio parameter parameters and set them in the GUI
-        auto path = processorRef.parameters.state.getProperty ("Path" + juce::String (chanNum), "/" + juce::String (chanNum) + "/value");
-        auto inMin = processorRef.parameters.state.getProperty ("InMin" + juce::String (chanNum), 0.0f);
-        auto inMax = processorRef.parameters.state.getProperty ("InMax" + juce::String (chanNum), 1.0f);
-        oscBridgeChannelEditors.back()->setPath (path);
-        oscBridgeChannelEditors.back()->setInMin (inMin);
-        oscBridgeChannelEditors.back()->setInMax (inMax);
+    // Get defaults from the non-audio parameter parameters and set them in the GUI
+    auto path = processorRef.parameters.state.getProperty ("Path", "/value");
+    auto inMin = processorRef.parameters.state.getProperty ("InMin", 0.0f);
+    auto inMax = processorRef.parameters.state.getProperty ("InMax", 1.0f);
+    oscBridgeChannelEditor->setPath (path);
+    oscBridgeChannelEditor->setInMin (inMin);
+    oscBridgeChannelEditor->setInMax (inMax);
 
-        // Now set up the defaults for audio parameters
-        auto midiChanParam = processorRef.parameters.getParameter ("MidiChan" + juce::String (chanNum));
-        auto midiChan = static_cast<juce::AudioParameterInt*> (midiChanParam)->get();
-        auto midiNumParam = processorRef.parameters.getParameter ("MidiNum" + juce::String (chanNum));
-        auto midiNum = static_cast<juce::AudioParameterInt*> (midiNumParam)->get();
-        auto msgTypeParam = processorRef.parameters.getParameter ("MsgType" + juce::String (chanNum));
-        auto msgType = static_cast<juce::AudioParameterInt*> (msgTypeParam)->get();
-        auto mutedParam = processorRef.parameters.getParameter ("Muted" + juce::String (chanNum));
-        auto muted = static_cast<juce::AudioParameterBool*> (mutedParam)->get();
+    // Now set up the defaults for audio parameters
+    auto midiChanParam = processorRef.parameters.getParameter ("MidiChan");
+    auto midiChan = static_cast<juce::AudioParameterInt*> (midiChanParam)->get();
+    auto midiNumParam = processorRef.parameters.getParameter ("MidiNum");
+    auto midiNum = static_cast<juce::AudioParameterInt*> (midiNumParam)->get();
+    auto msgTypeParam = processorRef.parameters.getParameter ("MsgType");
+    auto msgType = static_cast<juce::AudioParameterInt*> (msgTypeParam)->get();
+    auto mutedParam = processorRef.parameters.getParameter ("Muted");
+    auto muted = static_cast<juce::AudioParameterBool*> (mutedParam)->get();
 
-        oscBridgeChannelEditors.back()->setMidiChan (midiChan);
-        oscBridgeChannelEditors.back()->setMidiNum (midiNum);
-        oscBridgeChannelEditors.back()->setMsgType (msgType);
-        oscBridgeChannelEditors.back()->setMuted (muted);
+    oscBridgeChannelEditor->setMidiChan (midiChan);
+    oscBridgeChannelEditor->setMidiNum (midiNum);
+    oscBridgeChannelEditor->setMsgType (msgType);
+    oscBridgeChannelEditor->setMuted (muted);
 
-        addAndMakeVisible (*oscBridgeChannelEditors.back());
-    }
+    addAndMakeVisible (*oscBridgeChannelEditor);
 
     // Port
     auto portParam = processorRef.parameters.getParameter ("Port");
@@ -156,21 +152,17 @@ void PluginEditor::paint (juce::Graphics& g)
     // Update the activity indicators
 
     auto chanIndex = 0u;
-    for (auto& oscBridgeChannelEditor : oscBridgeChannelEditors)
-    {
-        auto& chan = *processorRef.getChannel (chanIndex);
+    auto& chan = *processorRef.getChannel ();
 
-        oscBridgeChannelEditor->updateActivityForChan (chan.state());
+    oscBridgeChannelEditor->updateActivityForChan (chan.state());
 
-        chanIndex++;
-    }
+    chanIndex++;
 }
 
 void PluginEditor::resized()
 {
     auto area = getLocalBounds();
-    auto totalChannels = oscBridgeChannelEditors.size() + 2.5f; // Including title, port, and hyperlink in count
-    auto itemHeight = static_cast<int> (static_cast<float> (area.getHeight()) / totalChannels);
+    auto itemHeight = static_cast<int> (static_cast<float> (area.getHeight()) / 2.5f);
 
     // Title area at the top
     // titleLabel.setBounds (area.removeFromTop (itemHeight));
@@ -178,10 +170,7 @@ void PluginEditor::resized()
     // Adjusting for the channels' labels and editors
     oscBridgeChannelLabels->setBounds (area.removeFromTop (itemHeight));
 
-    for (auto& oscBridgeChannelEditor : oscBridgeChannelEditors)
-    {
-        oscBridgeChannelEditor->setBounds (area.removeFromTop (itemHeight));
-    }
+    oscBridgeChannelEditor->setBounds (area.removeFromTop (itemHeight));
 
     // Layout for portLabel, portEditor, and hyperlinkButton at the bottom
     auto bottomArea = area.removeFromBottom (itemHeight); // Reserve space at the bottom

@@ -9,7 +9,7 @@
 class OSCBridgeChannelEditor : public juce::Component
 {
 public:
-    OSCBridgeChannelEditor (std::size_t channelNum, auto& apvts) : mChannelNum (channelNum), mApvts (apvts)
+    OSCBridgeChannelEditor (auto& apvts) : mApvts (apvts)
     {
         setupUI();
         setupAttachments();
@@ -128,7 +128,6 @@ public:
     auto& getActivityIndicator() { return activityIndicator; }
 
 private:
-    std::size_t mChannelNum { 0 };
     juce::AudioProcessorValueTreeState& mApvts;
 
     // GUI Components
@@ -151,27 +150,27 @@ private:
     // Setup button attachment
     juce::AudioProcessorValueTreeState::ButtonAttachment muteButtonAttachment {
         mApvts,
-        "Muted" + juce::String (mChannelNum),
+        "Muted",
         muteButton
     };
 
     // MsgType
     juce::AudioProcessorValueTreeState::ComboBoxAttachment msgTypeAttachment {
         mApvts,
-        "MsgType" + juce::String (mChannelNum),
+        "MsgType",
         outputMsgTypeComboBox
     };
 
     void setupAttachments()
     {
         // Construct parameter ID strings based on channel number
-        auto muteParamId = "Muted" + juce::String (mChannelNum);
-        auto pathParamId = "Path" + juce::String (mChannelNum);
-        auto inputMinParamId = "InMin" + juce::String (mChannelNum);
-        auto inputMaxParamId = "InMax" + juce::String (mChannelNum);
-        auto outputMidiChannelParamId = "MidiChan" + juce::String (mChannelNum);
-        auto outputMidiNumParamId = "MidiNum" + juce::String (mChannelNum);
-        auto msgTypeParamId = "MsgType" + juce::String (mChannelNum);
+        auto muteParamId = "Muted";
+        auto pathParamId = "Path";
+        auto inputMinParamId = "InMin";
+        auto inputMaxParamId = "InMax";
+        auto outputMidiChannelParamId = "MidiChan";
+        auto outputMidiNumParamId = "MidiNum";
+        auto msgTypeParamId = "MsgType";
 
         // Set up attachments
 
@@ -236,7 +235,7 @@ private:
                 pathEditor.setText (string, false);
 
                 // Set state
-                auto identifier = juce::Identifier ("Path" + juce::String (mChannelNum));
+                auto identifier = juce::Identifier ("Path");
                 DBG ("GUI SETTING " << identifier << ": " << string);
                 mApvts.state.setProperty (identifier, string, nullptr);
             }
@@ -252,7 +251,7 @@ private:
 
         // text change-> filter text
         inputMinEditor.onTextChange = [&] {
-            const auto identifier = juce::Identifier ("InMin" + juce::String (mChannelNum));
+            const auto identifier = juce::Identifier ("InMin");
             auto string = inputMinEditor.getText();
 
             if (string.isNotEmpty())
@@ -274,7 +273,7 @@ private:
 
         // Filter text
         inputMaxEditor.onTextChange = [&] {
-            const auto identifier = juce::Identifier ("InMax" + juce::String (mChannelNum));
+            const auto identifier = juce::Identifier ("InMax");
             auto string = inputMaxEditor.getText();
 
             if (string.isNotEmpty())

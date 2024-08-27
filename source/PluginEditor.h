@@ -2,7 +2,6 @@
 
 #include "BinaryData.h"
 #include "PluginProcessor.h"
-#include "bridge/OSCActivityListener.h"
 #include "gui/AboutComponent.h"
 #include "gui/BirdHouseLookAndFeel.h"
 #include "gui/OSCBridgeChannelEditor.h"
@@ -41,7 +40,7 @@ private:
     };
 
     // GUI for each channel
-    std::vector<std::unique_ptr<OSCBridgeChannelEditor>> oscBridgeChannelEditors;
+    std::unique_ptr<OSCBridgeChannelEditor> oscBridgeChannelEditor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

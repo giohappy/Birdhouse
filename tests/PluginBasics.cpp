@@ -26,7 +26,7 @@ TEST_CASE ("Plugin instance", "[instance]")
 
     SECTION ("OSC channel")
     {
-        auto& channel = testPlugin.getChannel (0);
+        auto& channel = testPlugin.getChannel ();
 
         // Set path
         channel.get()->state().setPath ("/1/value");

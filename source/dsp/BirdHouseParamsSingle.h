@@ -60,7 +60,7 @@ namespace birdhouse
 
             state.state.setProperty (inMinParamID, 0.0f, nullptr);
             state.state.setProperty (inMaxParamID, 1.0f, nullptr);
-            state.state.setProperty (pathParamID, +"/value", nullptr);
+            state.state.setProperty (pathParamID, + "/value", nullptr);
         }
 
         static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
