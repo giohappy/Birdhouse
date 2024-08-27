@@ -2,6 +2,7 @@ CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
 CMakeScripts
+CMakeSettings.json
 Makefile
 cmake_install.cmake
 install_manifest.txt
@@ -30,3 +31,4 @@ cmake-build-relwithdebinfo
 packaging/Output/*
 .cache
 build
+.vs

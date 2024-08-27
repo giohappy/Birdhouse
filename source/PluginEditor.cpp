@@ -1,7 +1,7 @@
 #include "PluginEditor.h"
 
 PluginEditor::PluginEditor (PluginProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+    : AudioProcessorEditor (&p), processorRef (p)//, inspector { *this }
 {
     DBG ("Constructing PluginEditor");
     // Set default look and feel
@@ -10,67 +10,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
     auto defaultFontSize = 20.0f;
 
-    // Link
-    aboutButton.setButtonText ("(?)");
-    aboutButton.onClick = [&] {
-        showAboutWindow();
-    };
-    aboutButton.setColour (juce::TextButton::textColourOnId, BirdHouse::Colours::magenta);
-    aboutButton.setColour (juce::TextButton::textColourOffId, BirdHouse::Colours::magenta);
-    aboutButton.setColour (juce::TextButton::buttonColourId, BirdHouse::Colours::bg);
-    aboutButton.setColour (juce::TextButton::buttonOnColourId, BirdHouse::Colours::bg);
-    // aboutButton.setColour (juce::TextButton::outlineColourId, BirdHouse::Colours::magenta);
-    // aboutButton.setColour (juce::HyperlinkButton::hoveredTextColourId, BirdHouse::Colours::magenta);
-    addAndMakeVisible (aboutButton);
-
     // Labels
     auto labelFont = juce::Font (defaultFontSize, juce::Font::bold);
     auto labelColour = BirdHouse::Colours::blue;
-    oscBridgeChannelLabels = std::make_unique<OSCBridgeChannelLabels>();
-    oscBridgeChannelLabels->setFont (labelFont);
-    oscBridgeChannelLabels->setColour (labelColour);
-    addAndMakeVisible (*oscBridgeChannelLabels);
-
-    // Set font for title
-    // auto titleFont = juce::Font (defaultFontSize * 1.33f, juce::Font::bold);
-    // titleLabel.setFont (titleFont);
-    // titleLabel.setText ("BirdHouse", juce::dontSendNotification);
-    // titleLabel.setColour (juce::Label::textColourId, BirdHouse::Colours::fg);
-    // titleLabel.setJustificationType (juce::Justification::centred);
-    // titleLabel.setVisible (true);
-    // addAndMakeVisible (titleLabel);
-
-    oscBridgeChannelEditor = std::make_unique<OSCBridgeChannelEditor> (processorRef.parameters);
-
-    // Set default values for the editors
-    oscBridgeChannelEditor->setFont (juce::Font (defaultFontSize, juce::Font::plain));
-    oscBridgeChannelEditor->setTitle (juce::String (1));
-
-    // Get defaults from the non-audio parameter parameters and set them in the GUI
-    auto path = processorRef.parameters.state.getProperty ("Path", "/value");
-    auto inMin = processorRef.parameters.state.getProperty ("InMin", 0.0f);
-    auto inMax = processorRef.parameters.state.getProperty ("InMax", 1.0f);
-    oscBridgeChannelEditor->setPath (path);
-    oscBridgeChannelEditor->setInMin (inMin);
-    oscBridgeChannelEditor->setInMax (inMax);
-
-    // Now set up the defaults for audio parameters
-    auto midiChanParam = processorRef.parameters.getParameter ("MidiChan");
-    auto midiChan = static_cast<juce::AudioParameterInt*> (midiChanParam)->get();
-    auto midiNumParam = processorRef.parameters.getParameter ("MidiNum");
-    auto midiNum = static_cast<juce::AudioParameterInt*> (midiNumParam)->get();
-    auto msgTypeParam = processorRef.parameters.getParameter ("MsgType");
-    auto msgType = static_cast<juce::AudioParameterInt*> (msgTypeParam)->get();
-    auto mutedParam = processorRef.parameters.getParameter ("Muted");
-    auto muted = static_cast<juce::AudioParameterBool*> (mutedParam)->get();
-
-    oscBridgeChannelEditor->setMidiChan (midiChan);
-    oscBridgeChannelEditor->setMidiNum (midiNum);
-    oscBridgeChannelEditor->setMsgType (msgType);
-    oscBridgeChannelEditor->setMuted (muted);
-
-    addAndMakeVisible (*oscBridgeChannelEditor);
-
+ 
     // Port
     auto portParam = processorRef.parameters.getParameter ("Port");
     auto port = static_cast<juce::AudioParameterInt*> (portParam)->get();
@@ -81,16 +24,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
     portAttachment->attach ("Port");
 
-    // On return -> lose focus
-    // portEditor.onReturnKey = [this] {
-    //     portEditor.focusLost (FocusChangeType::focusChangedDirectly);
-    // };
-
-    // // Focus lost -> update state
-    // portEditor.onFocusLost = [this] {
-
-    // };
-
     addAndMakeVisible (portEditor);
 
     // Port label
@@ -99,13 +32,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     portLabel.setText ("Port", juce::dontSendNotification);
     portLabel.setJustificationType (juce::Justification::centred);
     addAndMakeVisible (portLabel);
-
-    // Connection status
-    connectionStatusTitleLabel.setFont (labelFont);
-    connectionStatusTitleLabel.setColour (juce::Label::textColourId, labelColour);
-    connectionStatusTitleLabel.setText ("Status:", juce::dontSendNotification);
-    connectionStatusTitleLabel.setJustificationType (juce::Justification::left);
-    // addAndMakeVisible (connectionStatusTitleLabel);
 
     connectionStatusLabel.setFont (labelFont);
     connectionStatusLabel.setColour (juce::Label::textColourId, BirdHouse::Colours::fg);
@@ -117,10 +43,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (1000, 400);
+    setSize (400, 200);
 
     // Allow resizing
-    setResizable (true, true);
+    setResizable (false, false);
 }
 
 PluginEditor::~PluginEditor()
@@ -148,29 +74,26 @@ void PluginEditor::paint (juce::Graphics& g)
         connectionStatusLabel.setColour (juce::Label::textColourId, BirdHouse::Colours::red);
         connectionStatusLabel.setText ("Disconnected", juce::dontSendNotification);
     }
-
-    // Update the activity indicators
-
-    auto chanIndex = 0u;
-    auto& chan = *processorRef.getChannel ();
-
-    oscBridgeChannelEditor->updateActivityForChan (chan.state());
-
-    chanIndex++;
 }
 
 void PluginEditor::resized()
 {
+    juce::FlexBox fb;
+    fb.flexWrap = juce::FlexBox::Wrap::wrap;
+    fb.justifyContent = juce::FlexBox::JustifyContent::center;
+    fb.alignContent = juce::FlexBox::AlignContent::center;
+
+    fb.items.add (juce::FlexItem (portLabel).withMinWidth (50.0f).withMinHeight (50.0f));
+    fb.items.add (juce::FlexItem (portEditor).withMinWidth (50.0f).withMinHeight (50.0f));
+    fb.items.add (juce::FlexItem (connectionStatusLabel).withMinWidth (100.0f).withMinHeight (50.0f));
+
+    fb.performLayout (getLocalBounds());
+    /*
     auto area = getLocalBounds();
     auto itemHeight = static_cast<int> (static_cast<float> (area.getHeight()) / 2.5f);
 
     // Title area at the top
     // titleLabel.setBounds (area.removeFromTop (itemHeight));
-
-    // Adjusting for the channels' labels and editors
-    oscBridgeChannelLabels->setBounds (area.removeFromTop (itemHeight));
-
-    oscBridgeChannelEditor->setBounds (area.removeFromTop (itemHeight));
 
     // Layout for portLabel, portEditor, and hyperlinkButton at the bottom
     auto bottomArea = area.removeFromBottom (itemHeight); // Reserve space at the bottom
@@ -191,12 +114,5 @@ void PluginEditor::resized()
     // Connection status
     connectionStatusTitleLabel.setBounds (bottomArea.removeFromLeft (portEditorWidth * 2));
     connectionStatusLabel.setBounds (bottomArea.removeFromLeft (portEditorWidth * 2));
-
-    // Pad
-    bottomArea.removeFromLeft (static_cast<int> (portEditorWidth * 1.5f));
-
-    // Place hyperlinkButton on the far right of the bottom area
-    auto hyperlinkWidth = static_cast<int> (portEditorWidth * 0.5f);
-    // bottomArea.removeFromLeft (portEditorWidth * 2);
-    aboutButton.setBounds (bottomArea.removeFromRight (hyperlinkWidth));
-}
+    */
+ }

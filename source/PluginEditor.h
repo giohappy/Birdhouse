@@ -2,10 +2,9 @@
 
 #include "BinaryData.h"
 #include "PluginProcessor.h"
-#include "gui/AboutComponent.h"
 #include "gui/BirdHouseLookAndFeel.h"
-#include "gui/OSCBridgeChannelEditor.h"
-#include "gui/OSCBridgeChannelLabels.h"
+#include "gui/TextEditorAttachment.h"
+#include "melatonin_inspector/melatonin_inspector.h"
 
 //==============================================================================
 class PluginEditor : public juce::AudioProcessorEditor
@@ -26,11 +25,6 @@ private:
     // Labels
     std::unique_ptr<BirdHouse::BirdHouseLookAndFeel> lookAndFeel;
     juce::Label titleLabel { "BirdHouse" }, portLabel { "Port" }, connectionStatusTitleLabel { "Connection Status" }, connectionStatusLabel { "Disconnected" };
-    std::unique_ptr<OSCBridgeChannelLabels> oscBridgeChannelLabels;
-
-    // Link to help / info
-    AboutComponent aboutComponent;
-    juce::TextButton aboutButton { "?" };
 
     // Port
     juce::TextEditor portEditor;
@@ -39,8 +33,8 @@ private:
         std::make_unique<birdhouse::TextEditorAttachment<int>> (processorRef.parameters, portEditor, nullptr)
     };
 
-    // GUI for each channel
-    std::unique_ptr<OSCBridgeChannelEditor> oscBridgeChannelEditor;
+
+    //melatonin::Inspector inspector;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

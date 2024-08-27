@@ -106,6 +106,9 @@ juce_add_plugin(
   AU_MAIN_TYPE
   kAudioUnitType_MIDIProcessor)
 
+  target_link_libraries("${PROJECT_NAME}" PRIVATE melatonin_inspector)
+
+
 if(BUILD_CLAP)
 
   # Add clap support

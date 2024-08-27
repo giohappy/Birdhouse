@@ -256,7 +256,7 @@ namespace birdhouse
         std::atomic<float> mInputMin { 0.f }, mInputMax { 1.0f };
         std::atomic<float> mRawValue { 0.f };
         int mOutputMidiChan { 1 }, mOutMidiNum { 48 };
-        MsgType mMsgType { MsgType::MidiCC };
+        MsgType mMsgType { MsgType::MidiNote };
         bool mMuted { false };
     };
 

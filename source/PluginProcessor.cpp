@@ -27,7 +27,7 @@ PluginProcessor::PluginProcessor()
     auto inMax = parameters.state.getProperty ("InMax", 1.0f);
     auto outChan = parameters.state.getProperty ("MidiChan", 1);
     auto outNum = parameters.state.getProperty ("MidiNum", 48);
-    auto msgType = parameters.state.getProperty ("MsgType", 0);
+    auto msgType = parameters.state.getProperty ("MsgType", 1);
     auto muted = parameters.state.getProperty ("Muted", false);
 
     // Set up the channel
@@ -215,16 +215,13 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     {
         // Check if any of the channels have had changes in midi, if so, append note off to all channels
         // This is to prevent stuck notes
-        for (auto& chan : mOscBridgeChannels)
-        {
-            if (chan->state().midiChanged())
-            {
-                tmpMidi.addEvent (juce::MidiMessage::allNotesOff (chan->state().outChan()), sampleNum);
-                chan->state().resetMidiFlag();
-            }
 
-            chan->appendMessagesTo (tmpMidi, sampleNum);
+        if (mOscBridgeChannel->state().midiChanged())
+        {
+            tmpMidi.addEvent (juce::MidiMessage::allNotesOff (mOscBridgeChannel->state().outChan()), sampleNum);
+            mOscBridgeChannel->state().resetMidiFlag();
         }
+        mOscBridgeChannel->appendMessagesTo (tmpMidi, sampleNum);
     }
 
     // Replace the original midiMessages with the processed ones
